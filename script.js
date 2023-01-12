@@ -1,55 +1,64 @@
 function createCalendar(year, month) {
-    // Get the first day of the month
-    let firstDay = new Date(year, month - 1, 1)
-    // Get the last day of the month
-    let lastDay = new Date(year, month, 0)
-  
-    // Create the table element
     let table = document.createElement('table')
-  
-    // Create the table header element
-    let thead = document.createElement('thead')
-    table.appendChild(thead)
-    let tr = document.createElement('tr')
-    thead.appendChild(tr)
-
-    let weekdayNames = ['Monday', 'Tuesday', 'Wenesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-    for (let i = 0; i < 7; i++) {
+    // Create table header for weekday names
+    table.appendChild(document.createElement('thead'))
+    let trElement = document.createElement('tr')
+    let days = ['Monday', 'Tuesday', 'Wenesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    days.forEach(d => {
         let th = document.createElement('th')
-        th.textContent = weekdayNames[i]
-        tr.appendChild(th)
+        th.textContent = d
+        trElement.appendChild(th)
+    })
+    table.querySelector('thead').appendChild(trElement)
+    // Build a list of all the days in the given month
+    let date = new Date(year, month, 0),
+        daysCount = date.getDate(),
+        dates = []
+
+    for (let day = 1; day <= daysCount; day++) {
+        date.setDate(day)
+        dates.push(new Date(date.getFullYear(), date.getMonth(), date.getDate()))
     }
-  
-    // Create the table body element
-    let tbody = document.createElement('tbody')
-    table.appendChild(tbody)
-  
-    // Create a row for each week in the month
-    let currentDay = firstDay
 
-    while (currentDay <= lastDay) {
-        let tr = document.createElement('tr')
-        tbody.appendChild(tr)
-
-        for (let i = 0; i < 7; i++) {
-            let td = document.createElement('td')
-            tr.appendChild(td)
-
-            if (currentDay.getMonth() === firstDay.getMonth()) {
-                td.textContent = currentDay.getDate()
-            }
-
-            currentDay.setDate(currentDay.getDate() + 1)
+    let cal = [] // Calendar
+    let week = []
+    week.length = 7
+    week.fill(null)
+    dates.forEach(d => {
+        let j = d.getDay()
+        if (j === 1) { // Monday
+            // Start a new week on every monday
+            week = []
+            week.length = 7
+            week.fill(null)
         }
-    }
-  
-    // Return the table element
-    return table;
+        week[(j - 1 + 7) % 7] = d
+        if (j === 0 || d.getDate() === daysCount) // Sunday or end of month
+            // Sunday is the last day of the week
+            cal.push(week)
+    })
+
+    // Add weeks as rows (tr) and days as columns (td) to the table
+    table.appendChild(document.createElement('tbody'))
+    let today = new Date()
+    cal.forEach(w => {
+        let tr = document.createElement('tr')
+        w.forEach(d => {
+            let td = document.createElement('td')
+            td.innerHTML = d === null ? '&middot;' : d.getDate().toString()
+            if (d !== null && d.toDateString() == today.toDateString())
+                td.classList.add('today') // Highlight today on the calendar
+            tr.appendChild(td)
+        })
+        table.querySelector('tbody').appendChild(tr)
+    })
+
+    // Add the calendar table to the document
+    let firstEl = document.body.children[0]
+    firstEl.parentNode.insertBefore(table, firstEl)
 }
 
-let calendar = createCalendar(2012, 9);
-document.getElementById('calendar').appendChild(calendar);
+createCalendar(2012, 9)
 
   
   
